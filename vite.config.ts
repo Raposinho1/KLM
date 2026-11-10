@@ -9,9 +9,9 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg'],
       manifest: {
-        name: 'Quiet Field',
-        short_name: 'Quiet Field',
-        description: 'Un espacio sonoro para concentrarte, descansar y dormir.',
+        name: 'KLM',
+        short_name: 'KLM',
+        description: 'Ruido, naturaleza y tonos binaurales para concentración y descanso.',
         theme_color: '#17231e',
         background_color: '#f4f2eb',
         display: 'standalone',

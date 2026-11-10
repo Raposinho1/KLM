@@ -1,5 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;1,500;1,600&display=swap');
-:root{font-family:'DM Sans',sans-serif;color:#28362e;background:#f3f2eb;font-synthesis:none;text-rendering:optimizeLegibility}
+:root{font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#28362e;background:#f3f2eb;font-synthesis:none;text-rendering:optimizeLegibility}
 *{box-sizing:border-box}
 body{margin:0;min-width:320px;background:#f3f2eb}
 button,input{font:inherit}
@@ -9,7 +8,7 @@ button{cursor:pointer}
 .brand{display:flex;align-items:center;gap:11px;color:inherit;text-decoration:none;font-size:19px;font-weight:700;letter-spacing:-.8px;line-height:1}
 .brand-mark{width:36px;height:36px;border-radius:12px;background:#2c4437;color:#dce5d3;display:grid;place-items:center}
 .brand-light{font-weight:400;color:#7b8c75}
-.brand small{display:block;font:8px 'DM Mono',monospace;letter-spacing:1.4px;color:#8a9685;margin-top:6px}
+.brand small{display:block;font:8px ui-monospace,SFMono-Regular,Consolas,monospace;letter-spacing:1.4px;color:#8a9685;margin-top:6px}
 .main-nav{display:flex;gap:7px;background:#e9ebe3;padding:4px;border-radius:30px}
 .main-nav button{border:0;background:transparent;color:#778176;padding:9px 20px;border-radius:24px;font-size:12px}
 .main-nav button.nav-active{background:#fff;color:#2c4437;box-shadow:0 2px 8px #233d2910}
@@ -17,11 +16,11 @@ button{cursor:pointer}
 .icon-button,.reset-button{width:38px;height:38px;border:1px solid #dce1d7;background:#f7f7f1;border-radius:50%;display:grid;place-items:center;color:#536653}
 .main-content{width:min(920px,88vw);margin:0 auto}
 .intro{text-align:center;padding:65px 0 33px}
-.eyebrow,.section-kicker,.group-label,.muted-count,.player-topline,.visualizer-label,footer,.note-end{font:10px 'DM Mono',monospace;letter-spacing:1.2px}
+.eyebrow,.section-kicker,.group-label,.muted-count,.player-topline,.visualizer-label,footer,.note-end{font:10px ui-monospace,SFMono-Regular,Consolas,monospace;letter-spacing:1.2px}
 .eyebrow{color:#71836d;display:flex;align-items:center;justify-content:center;gap:9px}
 .eyebrow-dot,.status-dot{width:6px;height:6px;border-radius:50%;background:#92a77e;display:inline-block}
 .intro h1{font-size:clamp(42px,6vw,66px);line-height:1.05;letter-spacing:-2.8px;font-weight:500;margin:20px 0 15px}
-.intro h1 em{font-family:'Playfair Display',serif;font-weight:500;color:#70866b}
+.intro h1 em{font-family:Georgia,'Times New Roman',serif;font-weight:500;color:#70866b}
 .intro p{font-size:14px;line-height:1.8;color:#879087;margin:0}
 .player-card{background:#263b30;color:#e5e9dc;border-radius:19px;padding:20px 25px 18px;box-shadow:0 18px 40px #263b301c;overflow:hidden}
 .player-topline{display:flex;justify-content:space-between;color:#a8b6a4;font-size:9px}
@@ -43,7 +42,7 @@ input[type=range]{accent-color:#91a987;cursor:pointer}
 .section-block{padding:48px 0 0}
 .section-heading{display:flex;align-items:end;justify-content:space-between;margin-bottom:23px}
 .section-kicker{color:#8b9a83;font-size:9px}
-.section-heading h2{font-family:'Playfair Display',serif;font-size:29px;font-weight:500;letter-spacing:-.5px;margin:5px 0 0;color:#314238}
+.section-heading h2{font-family:Georgia,'Times New Roman',serif;font-size:29px;font-weight:500;letter-spacing:-.5px;margin:5px 0 0;color:#314238}
 .muted-count{font-size:9px;color:#9ca49a;padding-bottom:6px}
 .sound-group+.sound-group{margin-top:25px}
 .group-label{color:#9ba497;font-size:9px;margin-bottom:11px}
@@ -65,13 +64,13 @@ input[type=range]{accent-color:#91a987;cursor:pointer}
 .layer-info strong{font-size:12px;font-weight:600}
 .layer-info small{font-size:9px;color:#98a095}
 .layer-row input{width:130px}
-.layer-percent{font:10px 'DM Mono',monospace;color:#84917f;width:32px;text-align:right}
+.layer-percent{font:10px ui-monospace,SFMono-Regular,Consolas,monospace;color:#84917f;width:32px;text-align:right}
 .remove-layer{border:0;background:transparent;color:#9da69b;padding:5px}
 .add-layer-button,.text-button{display:flex;align-items:center;gap:7px;border:0;background:transparent;color:#74876e;font-size:11px;padding:13px 3px}
 .empty-state{border:1px dashed #d3dbcf;border-radius:12px;min-height:90px;display:flex;align-items:center;justify-content:center;gap:14px;padding:20px;color:#95a08f;font-size:12px}
 .eq-panel{border-top:1px solid #e1e4dc;margin-top:20px}
 .eq-row{display:grid;grid-template-columns:70px 1fr 60px;align-items:center;gap:20px;padding:12px 0;border-bottom:1px solid #e3e6df;font-size:12px}
-.eq-row b{text-align:right;font:10px 'DM Mono',monospace;color:#7b8c75}
+.eq-row b{text-align:right;font:10px ui-monospace,SFMono-Regular,Consolas,monospace;color:#7b8c75}
 .sessions-view{padding-bottom:20px}
 .sessions-intro{color:#889387;font-size:13px;line-height:1.7;margin:-8px 0 22px}
 .preset-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
@@ -80,13 +79,13 @@ input[type=range]{accent-color:#91a987;cursor:pointer}
 .preset-icon{width:31px;height:31px;border-radius:10px;background:#e8eee1;color:#7a9273;display:grid;place-items:center;margin-bottom:13px}
 .preset-card strong{font-size:13px}
 .preset-card small{font-size:10px;color:#929b90;margin-top:5px}
-.preset-duration{font:9px 'DM Mono',monospace;color:#82917c;margin-top:auto;padding-top:15px;letter-spacing:.6px}
+.preset-duration{font:9px ui-monospace,SFMono-Regular,Consolas,monospace;color:#82917c;margin-top:auto;padding-top:15px;letter-spacing:.6px}
 .preset-duration span{padding-left:5px}
 .timer-card{margin-top:25px;background:#e9ede4;border:1px solid #dbe2d5;border-radius:15px;padding:22px}
-.timer-card h3{font:30px 'Playfair Display',serif;margin:8px 0 3px;color:#34463a}
+.timer-card h3{font:30px Georgia,'Times New Roman',serif;margin:8px 0 3px;color:#34463a}
 .timer-card p{font-size:11px;color:#879384;margin:0 0 17px}
 .timer-options{display:flex;gap:8px;flex-wrap:wrap}
-.timer-options button{border:1px solid #d0d9ca;background:#f7f8f2;border-radius:30px;padding:8px 15px;color:#71816b;font:11px 'DM Mono',monospace}
+.timer-options button{border:1px solid #d0d9ca;background:#f7f8f2;border-radius:30px;padding:8px 15px;color:#71816b;font:11px ui-monospace,SFMono-Regular,Consolas,monospace}
 .timer-options button.chosen{background:#344b3b;color:#eaf0e3;border-color:#344b3b}
 .timer-actions{display:flex;gap:9px;margin-top:17px}
 .primary-button,.secondary-button{display:flex;align-items:center;justify-content:center;gap:8px;border-radius:30px;padding:10px 17px;font-size:11px}
@@ -135,3 +134,56 @@ footer{height:57px;border-top:1px solid #e0e4dc;display:flex;justify-content:spa
  .bottom-note{margin-top:40px}.mobile-timer{display:grid;place-items:center;position:fixed;right:18px;bottom:18px;width:46px;height:46px;border:0;border-radius:50%;background:#344b3b;color:#e8efdf;box-shadow:0 6px 20px #24392e35;z-index:4}
 }
 @media(max-width:390px){.topbar{padding:0 4vw}.brand{font-size:15px}.brand small{letter-spacing:.8px}.main-nav button{padding:8px 9px}.top-actions{gap:3px}.icon-button{width:31px;height:31px}.intro h1{font-size:43px}.master-control{gap:6px}.master-control input{width:48px}.layer-row input{width:55px}}
+
+/* KLM v0.2 — saved mixes and audio refinements */
+.saved-presets{margin-top:30px}
+.saved-preset-wrap{position:relative;min-width:0}
+.saved-preset-wrap .preset-card{width:100%;height:100%;padding-right:42px}
+.delete-preset{position:absolute;right:12px;top:13px;width:28px;height:28px;border:1px solid #d9e0d4;border-radius:50%;background:#f7f8f2;color:#8c9888;display:grid;place-items:center}
+.delete-preset:hover{color:#a45e55;border-color:#cda9a1}
+.night .delete-preset{background:#304435;border-color:#4b604e;color:#b9c8b1}
+.fade-row{margin-top:8px}
+.text-button{white-space:nowrap}
+@media(max-width:700px){.saved-preset-wrap .preset-card{min-height:125px}}
+
+.binaural-note{font-size:11px;line-height:1.65;color:#8a9688;background:#edf0e8;border-left:2px solid #9eaf83;padding:10px 13px;margin:0 0 12px;border-radius:0 8px 8px 0}
+.night .binaural-note{color:#b5c1af;background:#2b3d31;border-left-color:#9eaf83}
+
+/* Mobile compatibility and touch ergonomics */
+html{min-width:320px;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{overflow-x:hidden;padding-bottom:env(safe-area-inset-bottom)}
+button,.sound-tile,.icon-button,.play-button,.reset-button,.layer-toggle,.remove-layer,.timer-options button,.primary-button,.secondary-button{ -webkit-tap-highlight-color:transparent; touch-action:manipulation }
+input[type=range]{min-height:28px;touch-action:pan-x}
+.visualizer{touch-action:pan-y}
+@media(max-width:700px){
+ .topbar{position:relative;gap:8px;padding-left:max(4vw,env(safe-area-inset-left));padding-right:max(4vw,env(safe-area-inset-right))}
+ .main-nav{flex-shrink:0}
+ .main-nav button{white-space:nowrap}
+ .top-actions{flex-shrink:0}
+ .main-content{width:min(92vw,560px)}
+ .player-controls{min-width:0}
+ .master-control{min-width:0}
+ .master-control input{min-width:38px;max-width:74px;flex:1}
+ .layer-row{min-width:0;gap:6px}
+ .layer-info{min-width:0;overflow:hidden}
+ .layer-info strong,.layer-info small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+ .layer-row input{min-width:48px;max-width:90px;flex:1}
+ .layer-percent{width:30px;flex:0 0 30px}
+ .bottom-note{align-items:flex-start}
+ .toast{max-width:calc(100vw - 32px);white-space:normal;text-align:center;bottom:max(18px,env(safe-area-inset-bottom))}
+ .mobile-timer{bottom:max(18px,env(safe-area-inset-bottom))}
+}
+@media(max-width:360px){
+ .topbar{gap:5px}
+ .brand{gap:6px;font-size:14px}
+ .brand small{font-size:6px;letter-spacing:.5px}
+ .brand-mark{width:29px;height:29px}
+ .main-nav{gap:1px;padding:3px}
+ .main-nav button{padding:7px 8px;font-size:10px}
+ .top-actions{gap:2px}
+ .icon-button{width:29px;height:29px}
+ .master-control{gap:4px}
+ .master-control input{width:38px}
+ .layer-symbol{width:18px}
+ .layer-row input{min-width:42px}
+}

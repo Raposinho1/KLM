@@ -1,55 +1,16 @@
-export type SoundKind = 'white' | 'pink' | 'blue' | 'brown' | 'green' | 'rain' | 'wind' | 'forest'
+export type SoundKind = 'white' | 'pink' | 'blue' | 'brown' | 'green' | 'rain' | 'wind' | 'forest' | 'delta' | 'theta' | 'alpha' | 'beta' | 'gamma'
 
 export type Layer = {
   id: string
   kind: SoundKind
   gain: number
   active: boolean
-  node?: AudioWorkletNode
+  node?: AudioWorkletNode | ScriptProcessorNode
   gainNode?: GainNode
   filter?: BiquadFilterNode
+  oscillators?: OscillatorNode[]
+  panNodes?: StereoPannerNode[]
 }
-
-const workletCode = `
-class NoiseMaker extends AudioWorkletProcessor {
-  constructor() {
-    super()
-    this.b0=0; this.b1=0; this.b2=0; this.b3=0; this.b4=0; this.b5=0; this.b6=0;
-    this.brown=0; this.last=0;
-    this.port.onmessage = (e) => { this.kind = e.data.kind }
-    this.kind = 'white'
-  }
-  process(inputs, outputs) {
-    const out = outputs[0]
-    for (let c=0;c<out.length;c++) {
-      const channel=out[c]
-      for (let i=0;i<channel.length;i++) {
-        const white=Math.random()*2-1
-        let sample=white
-        if (this.kind==='pink' || this.kind==='rain' || this.kind==='forest') {
-          this.b0=0.99886*this.b0+white*0.0555179
-          this.b1=0.99332*this.b1+white*0.0750759
-          this.b2=0.96900*this.b2+white*0.1538520
-          this.b3=0.86650*this.b3+white*0.3104856
-          this.b4=0.55000*this.b4+white*0.5329522
-          this.b5=-0.7616*this.b5-white*0.0168980
-          sample=(this.b0+this.b1+this.b2+this.b3+this.b4+this.b5+this.b6+white*0.5362)*0.11
-          this.b6=white*0.115926
-        } else if (this.kind==='brown' || this.kind==='wind') {
-          this.brown=(this.brown+0.02*white)/1.02
-          sample=this.brown*3.5
-        } else if (this.kind==='blue') {
-          sample=(white-this.last)*0.5
-          this.last=white
-        }
-        channel[i]=sample
-      }
-    }
-    return true
-  }
-}
-registerProcessor('noise-maker', NoiseMaker)
-`
 
 export class AudioEngine {
   context: AudioContext | null = null
@@ -59,7 +20,7 @@ export class AudioEngine {
   mid: BiquadFilterNode | null = null
   high: BiquadFilterNode | null = null
   layers = new Map<string, Layer>()
-  ready = false
+  workletReady = false
 
   async init() {
     if (this.context) {
@@ -68,14 +29,31 @@ export class AudioEngine {
     }
     const Ctx = window.AudioContext || (window as any).webkitAudioContext
     this.context = new Ctx()
-    const blob = new Blob([workletCode], { type: 'application/javascript' })
-    const url = URL.createObjectURL(blob)
-    await this.context.audioWorklet.addModule(url)
-    URL.revokeObjectURL(url)
 
+    // iOS requires AudioContext.resume() to be requested directly inside
+    // the user's tap handler, before awaiting network/module operations.
+    const resumePromise = this.context.state === 'suspended'
+      ? this.context.resume()
+      : Promise.resolve()
+
+    // Load the processor from the same origin. If unavailable, use the
+    // ScriptProcessor fallback rather than leaving the interface silent.
+    if (this.context.audioWorklet && typeof AudioWorkletNode !== 'undefined') {
+      try {
+        const processorUrl = new URL('noise-processor.js', document.baseURI).href
+        await this.context.audioWorklet.addModule(processorUrl)
+        this.workletReady = true
+      } catch (error) {
+        console.warn('KLM: AudioWorklet unavailable, using compatibility audio engine.', error)
+        this.workletReady = false
+      }
+    }
+
+    await resumePromise
     this.master = this.context.createGain()
     this.analyser = this.context.createAnalyser()
     this.analyser.fftSize = 2048
+    this.analyser.smoothingTimeConstant = 0.82
     this.low = this.context.createBiquadFilter()
     this.low.type = 'lowshelf'
     this.low.frequency.value = 180
@@ -88,18 +66,79 @@ export class AudioEngine {
     this.high.frequency.value = 5000
     this.master.gain.value = 0.8
     this.master.connect(this.low).connect(this.mid).connect(this.high).connect(this.analyser).connect(this.context.destination)
-    this.ready = true
   }
 
-  async addLayer(kind: SoundKind, gain = 0.45) {
+  async addLayer(kind: SoundKind, gain = 0.35, fadeInSeconds = 0.35) {
     await this.init()
     const ctx = this.context!
+    if (ctx.state !== 'running') await ctx.resume()
     const id = `${kind}-${Date.now()}-${Math.random().toString(16).slice(2,6)}`
-    const node = new AudioWorkletNode(ctx, 'noise-maker', { numberOfOutputs: 1, outputChannelCount: [1] })
-    node.port.postMessage({ kind })
+    const binauralHz: Partial<Record<SoundKind, number>> = { delta: 2, theta: 6, alpha: 10, beta: 20, gamma: 40 }
+    const beatHz = binauralHz[kind]
     const gainNode = ctx.createGain()
-    gainNode.gain.value = 0
+    gainNode.gain.setValueAtTime(0, ctx.currentTime)
+    let node: AudioWorkletNode | ScriptProcessorNode | undefined
     let filter: BiquadFilterNode | undefined
+    let oscillators: OscillatorNode[] | undefined
+    let panNodes: StereoPannerNode[] | undefined
+
+    if (beatHz) {
+      // A binaural beat is perceived when each ear receives a slightly different tone.
+      // Use separate hard-panned oscillators: headphones are required for the intended effect.
+      const carrierHz = 220
+      oscillators = []
+      panNodes = []
+      for (const [pan, frequency] of [[-1, carrierHz], [1, carrierHz + beatHz]] as const) {
+        const oscillator = ctx.createOscillator()
+        oscillator.type = 'sine'
+        oscillator.frequency.value = frequency
+        const earGain = ctx.createGain()
+        earGain.gain.value = 0.5
+        const panner = ctx.createStereoPanner()
+        panner.pan.value = pan
+        oscillator.connect(earGain).connect(panner).connect(gainNode)
+        oscillator.start()
+        oscillators.push(oscillator)
+        panNodes.push(panner)
+      }
+    } else if (this.workletReady && typeof AudioWorkletNode !== 'undefined') {
+      node = new AudioWorkletNode(ctx, 'noise-maker', { numberOfOutputs: 1, outputChannelCount: [1] })
+      node.port.postMessage({ kind })
+    } else {
+      // Compatibility fallback for older mobile browsers.
+      const processor = ctx.createScriptProcessor(2048, 0, 1)
+      let brown = 0
+      let last = 0
+      let b0=0, b1=0, b2=0, b3=0, b4=0, b5=0, b6=0
+      let phase = 0
+      processor.onaudioprocess = (event) => {
+        const output = event.outputBuffer.getChannelData(0)
+        for (let i=0; i<output.length; i++) {
+          const white = Math.random() * 2 - 1
+          let sample = white
+          if (kind === 'pink' || kind === 'rain' || kind === 'forest') {
+            b0=0.99886*b0+white*0.0555179
+            b1=0.99332*b1+white*0.0750759
+            b2=0.96900*b2+white*0.1538520
+            b3=0.86650*b3+white*0.3104856
+            b4=0.55000*b4+white*0.5329522
+            b5=-0.7616*b5-white*0.0168980
+            sample=(b0+b1+b2+b3+b4+b5+b6+white*0.5362)*0.11
+            b6=white*0.115926
+          } else if (kind === 'brown' || kind === 'wind') {
+            brown=(brown+0.02*white)/1.02
+            sample=brown*3.5
+          } else if (kind === 'blue') {
+            sample=(white-last)*0.5
+            last=white
+          }
+          if (kind === 'wind') { phase += 0.000035; sample *= 0.62 + 0.38*(0.5+0.5*Math.sin(phase)) }
+          if (kind === 'rain') { phase += 0.00011; sample *= 0.76 + 0.24*(0.5+0.5*Math.sin(phase)) }
+          output[i]=sample
+        }
+      }
+      node = processor
+    }
     if (kind === 'blue') {
       filter = ctx.createBiquadFilter()
       filter.type = 'highpass'
@@ -123,12 +162,14 @@ export class AudioEngine {
       filter.frequency.value = 1800
       filter.Q.value = 0.3
     }
-    if (filter) node.connect(filter).connect(gainNode)
-    else node.connect(gainNode)
+    if (node) {
+      if (filter) node.connect(filter).connect(gainNode)
+      else node.connect(gainNode)
+    }
     gainNode.connect(this.master!)
-    const layer: Layer = { id, kind, gain, active: true, node, gainNode, filter }
+    const layer: Layer = { id, kind, gain, active: true, node, gainNode, filter, oscillators, panNodes }
     this.layers.set(id, layer)
-    gainNode.gain.setTargetAtTime(gain, ctx.currentTime, 0.12)
+    gainNode.gain.linearRampToValueAtTime(gain, ctx.currentTime + Math.max(0.02, fadeInSeconds))
     return layer
   }
 
@@ -147,13 +188,19 @@ export class AudioEngine {
     return layer.active
   }
 
-  removeLayer(id: string) {
+  removeLayer(id: string, fadeSeconds = 0.25) {
     const layer = this.layers.get(id)
     if (!layer || !this.context) return
-    layer.gainNode?.gain.setTargetAtTime(0, this.context.currentTime, 0.04)
+    const now = this.context.currentTime
+    const param = layer.gainNode?.gain
+    if (param) {
+      param.cancelScheduledValues(now)
+      param.setValueAtTime(param.value, now)
+      param.linearRampToValueAtTime(0, now + Math.max(0.02, fadeSeconds))
+    }
     window.setTimeout(() => {
-      try { layer.node?.disconnect(); layer.filter?.disconnect(); layer.gainNode?.disconnect() } catch {}
-    }, 180)
+      try { layer.node?.disconnect(); layer.filter?.disconnect(); layer.oscillators?.forEach(o => { try { o.stop(); o.disconnect() } catch {} }); layer.panNodes?.forEach(p => p.disconnect()); layer.gainNode?.disconnect() } catch {}
+    }, Math.max(100, fadeSeconds * 1000 + 80))
     this.layers.delete(id)
   }
 
@@ -166,9 +213,20 @@ export class AudioEngine {
     if (node && this.context) node.gain.setTargetAtTime(value, this.context.currentTime, 0.05)
   }
 
-  async stopAll() {
+  fadeOutAll(seconds = 2.5) {
     if (!this.context) return
-    for (const id of [...this.layers.keys()]) this.removeLayer(id)
+    const now = this.context.currentTime
+    for (const layer of this.layers.values()) {
+      const param = layer.gainNode?.gain
+      if (!param) continue
+      param.cancelScheduledValues(now)
+      param.setValueAtTime(param.value, now)
+      param.linearRampToValueAtTime(0, now + Math.max(0.1, seconds))
+    }
+  }
+
+  async stopAll(fadeSeconds = 0.25) {
+    for (const id of [...this.layers.keys()]) this.removeLayer(id, fadeSeconds)
   }
 }
 
